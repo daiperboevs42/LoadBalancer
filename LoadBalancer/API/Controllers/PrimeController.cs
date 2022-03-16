@@ -21,12 +21,16 @@ namespace API.Controllers
         [HttpGet("{id}")]
         public IActionResult Get(int id)
         {
+            
             var isPrimeResponse = _prime.isPrime(id);
             return Ok(new
             {
                 response = isPrimeResponse
             });
         }
+
+        
+
 
         // POST api/<PrimesController>
         [HttpPost]
