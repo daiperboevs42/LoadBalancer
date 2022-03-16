@@ -1,4 +1,7 @@
-﻿namespace API.Service
+﻿using System;
+using System.Collections.Generic;
+
+namespace API.Service
 {
     public interface IPrime
     {
