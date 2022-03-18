@@ -29,20 +29,19 @@ namespace API.Controllers
             });
         }
 
-        
-
 
         // POST api/<PrimesController>
         [HttpPost]
-        public IActionResult Post([FromBody] Response newObject)
+        public IActionResult Post([FromBody] Response entity)
         {
             try
             {
-                var countResponse = _prime.countPrime(newObject.from, newObject.to);
+                var responseCount = _prime.countPrime(entity.from, entity.to);
 
                 return Ok(new
                 {
-                    response = countResponse
+                    response = responseCount
+
                 });
 
             }
