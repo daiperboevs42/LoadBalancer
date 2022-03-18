@@ -10,11 +10,11 @@ namespace API.Controllers
     [ApiController]
     public class PrimesController : ControllerBase
     {
-        private readonly IPrime _prime;
+        private readonly IPrime _primeService;
 
-        public PrimesController(IPrime prime)
+        public PrimesController(IPrime primeService)
         {
-            _prime = prime;
+            _primeService = primeService;
         }
 
         // GET api/<PrimesController>/5
@@ -22,7 +22,7 @@ namespace API.Controllers
         public IActionResult Get(int id)
         {
             
-            var isPrimeResponse = _prime.isPrime(id);
+            var isPrimeResponse = _primeService.isPrime(id);
             return Ok(new
             {
                 response = isPrimeResponse
@@ -36,7 +36,7 @@ namespace API.Controllers
         {
             try
             {
-                var responseCount = _prime.countPrime(entity.from, entity.to);
+                var responseCount = _primeService.countPrime(entity.start, entity.end);
 
                 return Ok(new
                 {
