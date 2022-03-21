@@ -1,13 +1,77 @@
-const app = require('express')();
-const http = require('http').Server(app);
+const app = require('express')();  
+const http = require('http');
 const io = require('socket.io')(http);
 var https = require('https');
+var cors = require('cors');
+const server = http.createServer(app);
+const bodyParser = require('body-parser');
 
   let previousServer = 0;
-  let arrayOfServers = ['loadbalancerino.azurewebsites.net','loadbalancer2.azurewebsites.net'];
-io.on("connection", socket => {
+  let arrayOfServers = ['apiprime.azurewebsites.net','apiprime3.azurewebsites.net'];
 
-  function selectServer() {
+
+  // Middleware
+  app.use(bodyParser.json());
+  app.use(cors({
+	  origin: '*',
+	  methods: ["GET", "POST"]
+  }));
+
+app.get('/prime/:id', function(req, response) {
+	console.log("PeepeePoopoo")
+	const option = createOption ('' , 'GET', '/api/primes/' + req.params.id);
+	const requestHttp = https.request(option, res => {
+		console.log(`statusCode: ${res.statusCode}`)
+		res.setEncoding('utf8');
+		res.on('data', d => {
+			console.log(d);
+			response.send(d);
+			//socket.emit("isPrime", d);
+		})
+	})
+
+	requestHttp.on('error', error => {
+		console.error(error);
+		response.send(error);
+		//socket.emit("isPrime", 'Error');
+	})
+
+	requestHttp.end()
+});
+
+app.post('/prime', function (req, response) {
+	let change = req.body;
+	console.log(req.body)
+	console.log(req.body.before, req.body.after)
+	const data = JSON.stringify({
+		start: Number(change.before),
+		end: Number(change.after)
+	});
+		
+	const option = createOption ( data, 'POST', '/api/primes/');
+
+	const requestHttp = https.request(option, res => {
+		console.log(`statusCode: ${res.statusCode}`)
+		res.setEncoding('utf8');
+		res.on('data', d => {
+			console.log(d);
+			response.send(d);
+			//socket.emit("countPrime", d);
+		})
+	})
+
+	requestHttp.on('error', error => {
+		console.error(error);
+		response.send(error)
+		//socket.emit("countPrime", 'Error');
+	})
+
+	requestHttp.write(data)
+	requestHttp.end()
+})
+
+
+function selectServer() {
     if (previousServer >= arrayOfServers.length) previousServer = 0;
 		return arrayOfServers[previousServer++];
 	} 
@@ -24,7 +88,6 @@ io.on("connection", socket => {
 				  }
 			}
 		}
-		
 		return options = {
 		  hostname: selectServer(),
 		  port: 443,
@@ -36,52 +99,7 @@ io.on("connection", socket => {
 		  }
 		}
 	} 
-	socket.on("isPrime", docId => {
-		const option = createOption ('' , 'GET', '/api/primes/' + docId);
-		const req = https.request(option, res => {
-			console.log(`statusCode: ${res.statusCode}`)
 
-			res.on('data', d => {
-				socket.emit("isPrime", d);
-			})
-		})
-
-		req.on('error', error => {
-			console.error(error);
-			socket.emit("isPrime", 'Error');
-		})
-
-		req.end()
-    });
-	socket.on("countPrime", doc => {
-		const data = JSON.stringify({
-			from: Number(doc.before),
-			to: Number(doc.after)
-		});
-			
-		const option = createOption ( data, 'POST', '/api/primes/');
-
-		const req = https.request(option, res => {
-			console.log(`statusCode: ${res.statusCode}`)
-
-			res.on('data', d => {
-				socket.emit("countPrime", d);
-			})
-		})
-
-		req.on('error', error => {
-			console.error(error);
-			socket.emit("countPrime", 'Error');
-		})
-
-		req.write(data)
-		req.end()
-  });
-  
-
-  console.log(`Socket ${socket.id} has connected`);
-});
-
-http.listen(4444, () => {
+server.listen(4444, () => {
   console.log('Listening on port 4444');
 });
