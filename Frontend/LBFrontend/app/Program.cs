@@ -7,7 +7,7 @@ namespace app
         static void Main(string[] args)
         {
             Printer printer = new Printer();
-
+            new Requestmaker();
             printer.Options();
         }
     }

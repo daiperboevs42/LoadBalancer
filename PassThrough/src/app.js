@@ -1,13 +1,30 @@
 const app = require('express')();  
 const http = require('http');
-const io = require('socket.io')(http);
 var https = require('https');
 var cors = require('cors');
 const server = http.createServer(app);
 const bodyParser = require('body-parser');
+const fs = require('fs')
+const filePath = './monitordata.txt'
 
   let previousServer = 0;
+  let currentServer = 0;
+  //Insert/remove links to Instances here
   let arrayOfServers = ['apiprime.azurewebsites.net','apiprime3.azurewebsites.net'];
+
+  //Creates monitor file
+try {
+  if (fs.existsSync(filePath)) {
+    //file exists
+  }else{
+	fs.open('monitordata.txt', 'w', function (err, file) {
+		if (err) throw err;
+		console.log('Saved!');
+	  });
+  }
+} catch(err) {
+  console.error(err)
+}
 
 
   // Middleware
@@ -18,7 +35,6 @@ const bodyParser = require('body-parser');
   }));
 
 app.get('/prime/:id', function(req, response) {
-	console.log("PeepeePoopoo")
 	const option = createOption ('' , 'GET', '/api/primes/' + req.params.id);
 	const requestHttp = https.request(option, res => {
 		console.log(`statusCode: ${res.statusCode}`)
@@ -26,17 +42,20 @@ app.get('/prime/:id', function(req, response) {
 		res.on('data', d => {
 			console.log(d);
 			response.send(d);
-			//socket.emit("isPrime", d);
 		})
 	})
 
 	requestHttp.on('error', error => {
 		console.error(error);
 		response.send(error);
-		//socket.emit("isPrime", 'Error');
 	})
-
+	
 	requestHttp.end()
+	fs.appendFile(filePath, ' Response: ' + Date.now()+'\n\n'
+	, function (err) {
+		if (err) throw err;
+		console.log('Updated!');
+	  });
 });
 
 app.post('/prime', function (req, response) {
@@ -56,20 +75,27 @@ app.post('/prime', function (req, response) {
 		res.on('data', d => {
 			console.log(d);
 			response.send(d);
-			//socket.emit("countPrime", d);
 		})
 	})
 
 	requestHttp.on('error', error => {
 		console.error(error);
 		response.send(error)
-		//socket.emit("countPrime", 'Error');
 	})
-
+	
 	requestHttp.write(data)
 	requestHttp.end()
+	fs.appendFile(filePath, ' Response: ' + Date.now() +'\n\n'
+	, function (err) {
+		if (err) throw err;
+		console.log('Updated!');
+	  });
 })
 
+function showSelectedServer(){
+	if (currentServer >= arrayOfServers.length) currentServer = 0;
+		return arrayOfServers[currentServer++];
+	}
 
 function selectServer() {
     if (previousServer >= arrayOfServers.length) previousServer = 0;
@@ -77,6 +103,14 @@ function selectServer() {
 	} 
   
     function createOption(data, type, path){
+
+		fs.appendFile(filePath, 
+			'Server Instance: ' + showSelectedServer() + '\n Path: ' + path + '\n Timestamp: ' + Date.now() + '\n'
+			, function (err) {
+			if (err) throw err;
+			console.log('Updated!');
+		  });
+
 		if(type === 'GET'){
 			return options = {
 			  hostname: selectServer(),

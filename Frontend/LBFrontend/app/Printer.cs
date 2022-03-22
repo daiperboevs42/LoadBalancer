@@ -54,7 +54,10 @@ namespace app
             }
             catch
             {
-                Console.WriteLine("Invalid Input, please try again");
+                Console.WriteLine("Something went wrong, please try again");
+                Console.ReadLine();
+                Console.Clear();
+                Options();
             }
         }
     }

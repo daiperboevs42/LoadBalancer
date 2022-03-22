@@ -12,16 +12,22 @@ namespace app
 {
     public class Requestmaker
     {
-        //string url = "http://localhost:4444/api/primes/";
-
-            static HttpClient client = new HttpClient();
+        private static HttpClient client;
+        public Requestmaker()
+        {
+            client = new HttpClient();
+            client.BaseAddress = new Uri("http://localhost:4444/prime/");
+            client.DefaultRequestHeaders.Accept.Clear();
+            client.DefaultRequestHeaders.Accept.Add(
+                new MediaTypeWithQualityHeaderValue("application/json"));
+        }
 
             static void ShowResponse(string placeholder)
             {
                 Console.WriteLine(placeholder);
             }
 
-        static async Task<string> CreateProductAsync(Object ob)
+        static async Task<string> CountPrimeAsync(Object ob)
             {
             JsonContent content = JsonContent.Create(ob);
             HttpResponseMessage response = await client.PostAsync(
@@ -35,7 +41,7 @@ namespace app
             return placeholder;
             }
 
-            static async Task<string> GetProductAsync(Uri path)
+            static async Task<string> GetPrimeAsync(Uri path)
             {
                 string placeholder = null;
                 HttpResponseMessage response = await client.GetAsync(path);
@@ -48,44 +54,30 @@ namespace app
 
             public static async Task RunCheckIfPrime(int id)
             {
-                // Update port # in the following line.
-                client.BaseAddress = new Uri("http://localhost:4444/prime/" + id);
-                client.DefaultRequestHeaders.Accept.Clear();
-                client.DefaultRequestHeaders.Accept.Add(
-                    new MediaTypeWithQualityHeaderValue("application/json"));
                 try
                 {
-                // Get the product
-                string placeholder = await GetProductAsync(client.BaseAddress);
+                // Get the prime
+                    string placeholder = await GetPrimeAsync(new Uri(client.BaseAddress.ToString() + id));
                     ShowResponse(placeholder);
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine(e);
                 }
-
-                Console.ReadLine();
             }
 
         public static async Task RunCountPrime(int to, int from)
         {
-            // Update port # in the following line.
-            client.BaseAddress = new Uri("http://localhost:4444/prime/");
-            client.DefaultRequestHeaders.Accept.Clear();
-            client.DefaultRequestHeaders.Accept.Add(
-                new MediaTypeWithQualityHeaderValue("application/json"));
             try
             {
                 // Get the product
-                string placeholder = await CreateProductAsync(new{ before = to, after = from});
+                string placeholder = await CountPrimeAsync(new{ before = to, after = from});
                 ShowResponse(placeholder);
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
             }
-
-            Console.ReadLine();
         }
     }
 }
